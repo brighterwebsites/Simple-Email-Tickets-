@@ -1,0 +1,80 @@
+//ticket  custom fields call backs 
+// added in advanved scripts
+
+
+<?php
+
+// Meta box callback function for ticket details
+function display_ticket_meta_box($post) {
+    $fields = array(
+        'resolution' => 'Resolution',
+        'invoice_number' => 'Invoice Number',
+        'time' => 'Time (HH:MM)',
+        'status' => 'Status',
+        'resolution_date' => 'Resolution Date',
+        'assigned' => 'Assigned To',
+        'sent_for_review' => 'Sent for Review',
+        'is_billable' => 'Is Billable',
+        'updates' => 'Updates',
+        'billable_amount' => 'Billable Amount'
+    );
+
+    wp_nonce_field(basename(__FILE__), 'ticket_meta_box_nonce');
+
+    foreach ($fields as $key => $label) {
+        $value = get_post_meta($post->ID, '_' . $key, true);
+
+        if ($key == 'status') {
+            ?>
+            <p>
+                <label for="<?php echo $key; ?>"><?php echo $label; ?>:</label>
+                <select id="<?php echo $key; ?>" name="<?php echo $key; ?>">
+                    <option value="new" <?php selected($value, 'new'); ?>>New</option>
+                    <option value="in_progress" <?php selected($value, 'in_progress'); ?>>In Progress</option>
+                    <option value="on_hold" <?php selected($value, 'on_hold'); ?>>On Hold</option>
+                    <option value="resolved" <?php selected($value, 'resolved'); ?>>Resolved</option>
+                </select>
+            </p>
+            <?php
+        } elseif ($key == 'assigned') {
+            $current_user = wp_get_current_user();
+            ?>
+            <p>
+                <label for="<?php echo $key; ?>"><?php echo $label; ?>:</label>
+                <input type="hidden" id="<?php echo $key; ?>" name="<?php echo $key; ?>" value="<?php echo esc_attr($value); ?>" />
+                <input type="text" disabled value="<?php echo esc_attr($current_user->display_name); ?>" />
+            </p>
+            <?php
+        } elseif ($key == 'is_billable') {
+            ?>
+            <p>
+                <label for="<?php echo $key; ?>"><?php echo $label; ?>:</label>
+                <input type="checkbox" id="<?php echo $key; ?>" name="<?php echo $key; ?>" value="1" <?php checked($value, '1'); ?> />
+            </p>
+            <?php
+        } elseif ($key == 'updates') {
+            ?>
+            <div class="updates-wrapper">
+                <label for="<?php echo $key; ?>"><?php echo $label; ?>:</label>
+                <ul id="updates-list">
+                    <?php foreach ($value as $update) : ?>
+                        <li>
+                            <input type="date" class="update-date" name="update_date[]" value="<?php echo esc_attr($update['date']); ?>" />
+                            <input type="text" class="update-description" name="update_description[]" value="<?php echo esc_attr($update['description']); ?>" />
+                            <input type="time" class="update-time" step="1800" name="update_time[]" value="<?php echo esc_attr($update['time']); ?>" />
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+                <button type="button" id="add-update">Add Update</button>
+            </div>
+            <?php
+        } else {
+            ?>
+            <p>
+                <label for="<?php echo $key; ?>"><?php echo $label; ?>:</label>
+                <input type="text" id="<?php echo $key; ?>" name="<?php echo $key; ?>" value="<?php echo esc_attr($value); ?>" />
+            </p>
+            <?php
+        }
+    }
+}
