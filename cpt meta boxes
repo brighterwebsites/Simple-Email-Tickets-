@@ -1,0 +1,9 @@
+// added in advanved scripts
+
+<?php
+
+// Add meta boxes for ticket post type
+function register_ticket_meta_boxes() {
+    add_meta_box('ticket_details_meta_box', 'Ticket Details', 'display_ticket_meta_box', 'ticket', 'normal', 'high');
+}
+add_action('add_meta_boxes', 'register_ticket_meta_boxes');
