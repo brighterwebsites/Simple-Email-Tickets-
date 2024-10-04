@@ -1,0 +1,52 @@
+// added in advanved scripts
+//ticket save custom fields
+
+<?php
+
+// Save meta box data for ticket details
+function save_ticket_meta_box_data($post_id) {
+    // Check nonce for security
+    if (!isset($_POST['ticket_meta_box_nonce']) || !wp_verify_nonce($_POST['ticket_meta_box_nonce'], basename(__FILE__))) {
+        return;
+    }
+
+    // Check if auto-saving
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+        return;
+    }
+
+    // Check permissions
+    if (!current_user_can('edit_post', $post_id)) {
+        return;
+    }
+
+    // Fields to save
+    $fields = array(
+        'resolution', 'invoice_number', 'time', 'status', 'resolution_date', 'assigned',
+        'sent_for_review', 'is_billable', 'updates', 'billable_amount'
+    );
+
+    foreach ($fields as $field) {
+        if (isset($_POST[$field])) {
+            if ($field == 'is_billable') {
+                update_post_meta($post_id, '_' . $field, sanitize_text_field($_POST[$field]) ? '1' : '0');
+            } elseif ($field == 'updates') {
+                $updates = array();
+                $update_count = count($_POST['update_date']);
+                for ($i = 0; $i < $update_count; $i++) {
+                    if (!empty($_POST['update_date'][$i])) {
+                        $update = array(
+                            'date' => sanitize_text_field($_POST['update_date'][$i]),
+                            'description' => sanitize_text_field($_POST['update_description'][$i]),
+                            'time' => sanitize_text_field($_POST['update_time'][$i])
+                        );
+                        $updates[] = $update;
+                    }
+                }
+                update_post_meta($post_id, '_updates', $updates);
+            } else {
+                update_post_meta($post_id, '_' . $field, sanitize_text_field($_POST[$field]));
+            }
+        }
+    }
+}
