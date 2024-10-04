@@ -1,0 +1,11 @@
+// added in advanved scripts
+
+//ticket tidy ups
+
+// Disable comments and custom fields for 'ticket' post type
+function disable_ticket_comments() {
+    remove_post_type_support('ticket', 'comments');
+    remove_post_type_support('ticket', 'trackbacks');
+    remove_post_type_support('ticket', 'custom-fields');
+}
+add_action('admin_init', 'disable_ticket_comments');
